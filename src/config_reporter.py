@@ -126,7 +126,7 @@ def create_report(AGGREGATOR_NAME, today, filename):
                         load_baseline(ec2Json)
                     except:
                         pass
-                    write_host(resourceId=resource_id, info=response2['ConfigurationItem']['configuration'])
+                    write_host(account_id=account_id, resourceId=resource_id, info=response2['ConfigurationItem']['configuration'])
 
         try:
             nexttoken = response['NextToken']
@@ -136,19 +136,24 @@ def create_report(AGGREGATOR_NAME, today, filename):
     print("Report generated " + filename)
 
 def uploadFileS3(filename, BUCKET):
-    s3 = boto3.client('s3')
-    object_name = os.path.basename(filename)
+
     try: 
-        response = s3.delete_object(
-            Bucket=BUCKET,
-            Key=object_name,)
-        print(response)
+        if os.path.exists(filename):
+            s3 = boto3.client('s3')
+            object_name = os.path.basename(filename)
+            response = s3.delete_object(
+                Bucket=BUCKET,
+                Key=object_name,)
+            print(response)
     except:
-        pass
+        logging.error(e)
+        print("The file was not found")
+        exit()
 
     try:
-        s3.upload_file(filename, BUCKET, object_name)
-        print("Upload Successful")    
+        if os.path.exists(filename):
+            s3.upload_file(filename, BUCKET, object_name)
+            print("Upload Successful")    
 
     except ClientError as e:
         logging.error(e)
@@ -177,7 +182,7 @@ def load_baseline(filename):
         except:
             check = False
 
-def write_host(resourceId, info):
+def write_host(account_id, resourceId, info):
     
     #TO THINK: 1 file for each host or all in the same file??
 
@@ -189,6 +194,8 @@ def write_host(resourceId, info):
 
             json_string = '{"resourceId":"'
             json_string += resourceId
+            json_string += '","account_id":"'
+            json_string += account_id
             json_string += '",'
             json_string += '"info\":'
             json_string += info 
@@ -203,6 +210,9 @@ def write_host(resourceId, info):
         
         json_string = '{"resources":[{"resourceId":"'
         json_string += resourceId
+        json_string += '",'
+        json_string += '","account_id":"'
+        json_string += account_id
         json_string += '",'
         json_string += '"info\":'
         json_string += info 
