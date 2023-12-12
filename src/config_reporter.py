@@ -250,7 +250,7 @@ def create_report(AGGREGATOR_NAME):
         write_info(account_id=account_id, resourceId=resource_id, info=response2['ConfigurationItem']['configuration'],filename=RDSINJson)
 
     # Global Accelerator Instance 
-    sql = " AND ( configuration.IpAddresses BETWEEN '0.0.0.0' AND '255.255.255.255' )"
+    sql = " AND ( configuration.IpAddresses BETWEEN '0.0.0.0' AND '255.255.255.255' or configuration.DnsName <> '')"
     json_list = getdata(AGGREGATOR_NAME, type='AWS::GlobalAccelerator::Accelerator', sql_where=sql)
 
     for resource in json_list:
@@ -276,7 +276,7 @@ def create_report(AGGREGATOR_NAME):
         write_info(account_id=account_id, resourceId=resource_id, info=response2['ConfigurationItem']['configuration'],filename=GlobalAccJson)
 
     # LightSail Instance 
-    sql = " AND ( configuration.IpAddresses BETWEEN '0.0.0.0' AND '255.255.255.255' )"
+    sql = " AND ( configuration.IpAddresses BETWEEN '0.0.0.0' AND '255.255.255.255' OR configuration.Url <> '')"
     json_list = getdata(AGGREGATOR_NAME, type='AWS::Lightsail::StaticIp', sql_where=sql)
 
     for resource in json_list:
